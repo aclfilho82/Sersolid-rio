@@ -1,0 +1,211 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Ser Solidário</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e0f7fa;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            padding-left: 35px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .form-group .currency-symbol {
+            position: absolute;
+            left: 10px;
+            top: 36px;
+            color: #555;
+        }
+        .form-group button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background-color: #4caf50;
+            color: white;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        th {
+            background-color: #fdd835;
+            color: #333;
+        }
+        td {
+            text-align: center;
+        }
+    </style>
+    <script>
+        function calcularValores() {
+            const valorMensalidadeInput = document.getElementById('valorMensalidade');
+            const valorMensalidade = parseFloat(valorMensalidadeInput.value.replace(/\./g, '').replace(',', '.')) || 0;
+            const duracaoCurso = parseInt(document.getElementById('duracaoCurso').value) || 0;
+            const desconto = parseFloat(document.getElementById('desconto').value) / 100 || 0;
+
+            if (valorMensalidade === 0 || duracaoCurso === 0) {
+                return;
+            }
+
+            const mesesDiluição = duracaoCurso - 1;
+            const valorDescontoCampanha = valorMensalidade * desconto;
+            const valorMensalidadeComDesconto = valorMensalidade - valorDescontoCampanha;
+            const saldoSerSolidario = valorMensalidadeComDesconto - 129;
+            const valorParcelaSerSolidario = saldoSerSolidario / mesesDiluição;
+
+            // Calculando o Cashback automaticamente
+            const cashback = valorMensalidadeComDesconto * 0.05;
+
+            // Preencher os campos de valores
+            document.getElementById('mesesDiluição').value = mesesDiluição;
+            document.getElementById('valorDescontoCampanha').value = valorDescontoCampanha.toFixed(2);
+            document.getElementById('valorMensalidadeComDesconto').value = valorMensalidadeComDesconto.toFixed(2);
+            document.getElementById('saldoSerSolidario').value = saldoSerSolidario.toFixed(2);
+            document.getElementById('valorParcelaSerSolidario').value = valorParcelaSerSolidario.toFixed(2);
+            document.getElementById('cashbackBUNI').value = cashback.toFixed(2).replace('.', ',');
+
+            // Exibir os valores na tabela, limitando a 6 meses
+            const tabelaMensalidades = document.getElementById('tabelaMensalidades');
+            tabelaMensalidades.innerHTML = `
+                <tr>
+                    <th>Meses</th>
+                    <th>Valor Integral</th>
+                    <th>Valor do Desconto de Campanha</th>
+                    <th>Parcela da Diluição</th>
+                    <th>Valor Cobrado</th>
+                </tr>
+            `;
+
+            // Mostrar apenas os 6 primeiros meses
+            for (let i = 1; i <= 6; i++) {
+                let valorIntegral = valorMensalidade;
+                let valorDiluido = valorMensalidadeComDesconto;
+                let descontoCampanha = valorDescontoCampanha;
+                let parcelaDiluição = i > 1 && i <= mesesDiluição + 1 ? valorParcelaSerSolidario : 0;
+                let valorCobrado = i === 1 ? 129 : (valorMensalidadeComDesconto + parcelaDiluição);
+
+                tabelaMensalidades.innerHTML += `
+                    <tr>
+                        <td>${i}</td>
+                        <td>R$ ${valorIntegral.toFixed(2).replace('.', ',')}</td>
+                        <td>R$ ${descontoCampanha.toFixed(2).replace('.', ',')}</td>
+                        <td>R$ ${parcelaDiluição.toFixed(2).replace('.', ',')}</td>
+                        <td>R$ ${valorCobrado.toFixed(2).replace('.', ',')}</td>
+                    </tr>
+                `;
+            }
+        }
+
+        function formatarMoeda(event) {
+            let input = event.target;
+            let value = input.value;
+
+            value = value.replace(/\D/g, '');
+            value = (value / 100).toFixed(2) + '';
+            value = value.replace(".", ",");
+            value = value.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+
+            input.value = value;
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Calculadora Ser Solidário</h1>
+        <div class="form-group">
+            <label for="valorMensalidade">Valor da mensalidade:</label>
+            <span class="currency-symbol">R$</span>
+            <input type="text" id="valorMensalidade" oninput="formatarMoeda(event); calcularValores()">
+        </div>
+        <div class="form-group">
+            <label for="duracaoCurso">Duração do curso (meses):</label>
+            <input type="number" id="duracaoCurso" oninput="calcularValores()">
+        </div>
+        <div class="form-group">
+            <label for="mesesDiluição">Meses da Diluição:</label>
+            <input type="number" id="mesesDiluição" readonly>
+        </div>
+        <div class="form-group">
+            <label for="desconto">Desconto (%):</label>
+            <input type="number" id="desconto" oninput="calcularValores()" step="0.01">
+        </div>
+        <div class="form-group">
+            <label for="valorDescontoCampanha">Valor do Desconto de Campanha:</label>
+            <span class="currency-symbol">R$</span>
+            <input type="text" id="valorDescontoCampanha" readonly>
+        </div>
+        <div class="form-group">
+            <label for="valorMensalidadeComDesconto">Valor da mensalidade com Desconto da Campanha:</label>
+            <span class="currency-symbol">R$</span>
+            <input type="text" id="valorMensalidadeComDesconto" readonly>
+        </div>
+        <div class="form-group">
+            <label for="cashbackBUNI">Cashback B.UNI (5%):</label>
+            <span class="currency-symbol">R$</span>
+            <input type="text" id="cashbackBUNI" readonly>
+        </div>
+        <div class="form-group">
+            <label for="saldoSerSolidario">Saldo Ser Solidário:</label>
+            <span class="currency-symbol">R$</span>
+            <input type="text" id="saldoSerSolidario" readonly>
+        </div>
+        <div class="form-group">
+            <label for="valorParcelaSerSolidario">Valor da Parcela Ser Solidário:</label>
+            <span class="currency-symbol">R$</span>
+            <input type="text" id="valorParcelaSerSolidario" readonly>
+        </div>
+
+        <table id="tabelaMensalidades">
+            <tr>
+                <th>Meses</th>
+                <th>Valor Integral</th>
+                <th>Valor do Desconto de Campanha</th>
+                <th>Parcela da Diluição</th>
+                <th>Valor Cobrado</th>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>
